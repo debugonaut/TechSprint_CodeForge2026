@@ -178,7 +178,7 @@ export default function Dashboard({ user }) {
                   <div className="flex justify-between items-start mb-3 gap-2">
                     <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                       <a href={item.url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
-                        {item.ai_output?.summary ? (item.raw_input?.title || "Web Resource") : "Processing..."}
+                        {item.ai_output?.title || item.raw_input?.title || "Processing..."}
                       </a>
                     </h3>
                     <a href={item.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors">

@@ -51,6 +51,7 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
       
       Output ONLY valid JSON (no markdown formatting) with this structure:
       {
+        "title": "Short, descriptive title (3-6 words capturing the main topic)",
         "content_type": "article|video|documentation|tool|other",
         "summary": "2 sentences explaining what this is and why I might want to save it.",
         "key_ideas": ["3 bullet points", "capturing main value"],
