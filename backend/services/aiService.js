@@ -2,8 +2,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-// Initialize Gemini
-// We default to a placeholder if missing, but it will error if called without a key in env
+// Initialize Gemini with v1 API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_API_KEY");
 
 const scrapeContent = async (url) => {
@@ -41,7 +40,7 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
     }
 
     // 2. Prepare Prompt
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     const prompt = `
       You are RecallBin AI. Your goal is to summarize web content for future recall.
       

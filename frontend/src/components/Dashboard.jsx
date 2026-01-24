@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info } from 'lucide-react';
+import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info, X, Calendar, TrendingUp } from 'lucide-react';
 
 export default function Dashboard({ user }) {
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   
   // Form State
   const [url, setUrl] = useState('');
@@ -165,7 +166,8 @@ export default function Dashboard({ user }) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ delay: index * 0.05 }}
-                  className="group bg-surface/40 hover:bg-surface/60 border border-white/5 hover:border-primary/20 backdrop-blur-md rounded-xl p-5 transition-all hover:-translate-y-1 flex flex-col h-full"
+                  onClick={() => setSelectedItem(item)}
+                  className="group bg-surface/40 hover:bg-surface/60 border border-white/5 hover:border-primary/20 backdrop-blur-md rounded-xl p-5 transition-all hover:-translate-y-1 flex flex-col h-full cursor-pointer"
                 >
                   {/* Header */}
                   <div className="flex justify-between items-start mb-3 gap-2">
@@ -215,6 +217,106 @@ export default function Dashboard({ user }) {
           </div>
         )}
       </main>
+
+      {/* Detail Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-surface border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Title */}
+              <h2 className="text-3xl font-bold mb-2 pr-10 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                {selectedItem.ai_output?.title || selectedItem.raw_input?.title || "Saved Content"}
+              </h2>
+
+              {/* URL */}
+              <a
+                href={selectedItem.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary hover:underline text-sm mb-6 inline-flex items-center gap-2"
+              >
+                <ExternalLink size={14} />
+                Visit Source
+              </a>
+
+              {/* Meta Info */}
+              <div className="flex gap-4 mb-6 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Calendar size={14} />
+                  {new Date(selectedItem.created_at).toLocaleDateString()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={14} />
+                  {selectedItem.ai_output?.confidence_level?.toUpperCase() || "UNKNOWN"} Confidence
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Summary</h3>
+                <p className="text-gray-300 leading-relaxed">
+                  {selectedItem.ai_output?.summary || "No summary available."}
+                </p>
+              </div>
+
+              {/* Key Ideas */}
+              {selectedItem.ai_output?.key_ideas && selectedItem.ai_output.key_ideas.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-2">Key Ideas</h3>
+                  <ul className="list-disc list-inside space-y-1 text-gray-300">
+                    {selectedItem.ai_output.key_ideas.map((idea, i) => (
+                      <li key={i}>{idea}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Tags */}
+              {selectedItem.ai_output?.tags && selectedItem.ai_output.tags.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedItem.ai_output.tags.map((tag, i) => (
+                      <div key={i} className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full uppercase tracking-wider font-medium">
+                        <Hash size={12} />
+                        {tag}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Entities */}
+              {selectedItem.ai_output?.entities && selectedItem.ai_output.entities.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-2">Entities</h3>
+                  <p className="text-gray-300">{selectedItem.ai_output.entities.join(", ")}</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
