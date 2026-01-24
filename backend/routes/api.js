@@ -96,4 +96,21 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// DELETE /api/delete/:id
+router.delete('/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.uid;
+
+    // Delete the document
+    await db.collection('users').doc(userId).collection('saved_content').doc(id).delete();
+
+    res.json({ message: 'Content deleted successfully', id });
+
+  } catch (error) {
+    console.error('Error in /delete:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;

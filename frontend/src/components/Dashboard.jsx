@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info, X, Calendar, TrendingUp } from 'lucide-react';
+import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info, X, Calendar, TrendingUp, Trash2, FolderOpen } from 'lucide-react';
 
 // API URL: use relative path in production (Vercel), localhost in development
 const API_URL = import.meta.env.DEV 
@@ -13,10 +13,14 @@ export default function Dashboard({ user }) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   
   // Form State
   const [url, setUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Categories for filtering
+  const categories = ['all', 'music', 'tech', 'news', 'entertainment', 'education', 'business', 'sports', 'health', 'science', 'other'];
 
   const fetchItems = async (searchQuery = '') => {
     setLoading(true);
@@ -78,6 +82,33 @@ export default function Dashboard({ user }) {
       setIsSaving(false);
     }
   };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${API_URL}/api/delete/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        setSelectedItem(null);
+        fetchItems(query);
+      } else {
+        alert('Failed to delete');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting');
+    }
+  };
+
+  // Filtered items by category
+  const filteredItems = selectedCategory === 'all' 
+    ? items 
+    : items.filter(item => item.ai_output?.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-background text-white p-4 md:p-8 relative overflow-hidden">
@@ -156,38 +187,65 @@ export default function Dashboard({ user }) {
           />
         </section>
 
+        {/* Category Filter Tabs */}
+        <section className="flex gap-2 overflow-x-auto pb-2">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                selectedCategory === cat
+                  ? 'bg-primary text-white'
+                  : 'bg-surface/50 text-gray-400 hover:bg-surface hover:text-white'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                {cat === 'all' && <FolderOpen size={14} />}
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                {cat !== 'all' && ` (${items.filter(i => i.ai_output?.category === cat).length})`}
+              </span>
+            </button>
+          ))}
+        </section>
+
         {/* Masonry Grid (Simulated with Flex for now) */}
-        {loading && items.length === 0 ? (
+        {loading && filteredItems.length === 0 ? (
            <div className="flex justify-center p-12">
              <Loader2 className="animate-spin text-primary" size={32} />
            </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence>
-              {items.map((item, index) => (
+              {filteredItems.map((item, index) => (
                 <motion.div 
                   key={item.id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedItem(item)}
-                  className="group bg-surface/40 hover:bg-surface/60 border border-white/5 hover:border-primary/20 backdrop-blur-md rounded-xl p-5 transition-all hover:-translate-y-1 flex flex-col h-full cursor-pointer"
+                  className="group bg-surface/40 hover:bg-surface/60 border border-white/5 hover:border-primary/20 backdrop-blur-md rounded-xl p-5 transition-all hover:-translate-y-1 flex flex-col h-full relative"
                 >
+                  {/* Delete Button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                    title="Delete"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+
                   {/* Header */}
-                  <div className="flex justify-between items-start mb-3 gap-2">
-                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                      <a href={item.url} target="_blank" rel="noreferrer" className="flex items-center gap-2">
-                        {item.ai_output?.title || item.raw_input?.title || "Processing..."}
-                      </a>
+                  <div className="flex justify-between items-start mb-3 gap-2" onClick={() => setSelectedItem(item)}>
+                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors cursor-pointer">
+                      {item.ai_output?.title || item.raw_input?.title || "Processing..."}
                     </h3>
-                    <a href={item.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors">
+                    <a href={item.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.stopPropagation()}>
                       <ExternalLink size={14} />
                     </a>
                   </div>
 
                   {/* Summary */}
-                  <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-4 flex-1">
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-4 flex-1 cursor-pointer" onClick={() => setSelectedItem(item)}>
                     {item.ai_output?.summary || "AI is analyzing this content..."}
                   </p>
 
@@ -212,6 +270,13 @@ export default function Dashboard({ user }) {
                 </motion.div>
               ))}
             </AnimatePresence>
+          </div>
+        )}
+        
+        {!loading && filteredItems.length === 0 && items.length > 0 && (
+          <div className="text-center py-20 text-gray-600">
+            <Info className="mx-auto mb-2 opacity-50" size={32} />
+            <p>No items in this category.</p>
           </div>
         )}
         
@@ -318,6 +383,15 @@ export default function Dashboard({ user }) {
                   <p className="text-gray-300">{selectedItem.ai_output.entities.join(", ")}</p>
                 </div>
               )}
+
+              {/* Delete Button in Modal */}
+              <button
+                onClick={() => handleDelete(selectedItem.id)}
+                className="w-full mt-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <Trash2 size={18} />
+                Delete This Item
+              </button>
             </motion.div>
           </motion.div>
         )}
