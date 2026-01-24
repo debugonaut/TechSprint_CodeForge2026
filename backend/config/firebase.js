@@ -1,9 +1,14 @@
 const admin = require('firebase-admin');
 
 // On Vercel, we can't read a file easily. We will pass the JSON string as an ENV variable.
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-  : require('./serviceAccountKey.json'); // Fallback for local dev
+let serviceAccount;
+try {
+  serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
+    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
+    : require('./serviceAccountKey.json'); 
+} catch (error) {
+  console.error("Firebase Service Account missing or invalid. Search and save will fail.");
+}
 
 if (!admin.apps.length) {
     try {
