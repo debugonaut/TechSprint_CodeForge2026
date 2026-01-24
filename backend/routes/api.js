@@ -45,6 +45,21 @@ router.post('/save', async (req, res) => {
   } catch (error) {
     console.error('Error in /save:', error);
     
+    // Handle API key issues
+    if (error.message?.includes('API_KEY_MISSING')) {
+      return res.status(500).json({ 
+        error: 'API key not configured', 
+        message: 'Gemini API key is missing. Please configure it in environment variables.' 
+      });
+    }
+    
+    if (error.message?.includes('API_KEY_INVALID')) {
+      return res.status(500).json({ 
+        error: 'Invalid API key', 
+        message: 'The Gemini API key is invalid. Please check your configuration.' 
+      });
+    }
+    
     // Handle quota exceeded specifically
     if (error.message?.includes('QUOTA_EXCEEDED')) {
       return res.status(429).json({ 

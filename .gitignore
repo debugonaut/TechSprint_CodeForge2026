@@ -6,3 +6,4 @@ backend/config/serviceAccountKey.json
 backend/.env
 frontend/.env
 dist
+backend/server.log

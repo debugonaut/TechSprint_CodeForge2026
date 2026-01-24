@@ -3,7 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 // Initialize Gemini with v1 API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "YOUR_API_KEY");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const scrapeContent = async (url) => {
   try {
@@ -31,6 +31,12 @@ const scrapeContent = async (url) => {
 
 const summarizeContent = async ({ url, title, description, content_text, platform }) => {
   try {
+    // Check if API key is configured
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "YOUR_API_KEY") {
+      console.error("GEMINI_API_KEY is not configured!");
+      throw new Error('API_KEY_MISSING: Gemini API key is not configured');
+    }
+
     // 1. Scrape if URL is provided and we don't have rich text
     let contextText = content_text;
     if (url && (!content_text || content_text.length < 50)) {
@@ -39,8 +45,7 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
         if (scraped) contextText = scraped;
     }
 
-    // 2. Prepare Prompt
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     const prompt = `
       You are RecallBin AI. Your goal is to summarize web content for future recall.
       
@@ -69,17 +74,31 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
     const response = await result.response;
     let text = response.text();
     
-    // Clean markdown if present
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Improved JSON cleaning
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      text = jsonMatch[0];
+    }
     
     return JSON.parse(text);
 
   } catch (error) {
     console.error("AI Generation failed:", error.message);
+    console.error("Full error:", error);
+    
+    // Check for API key issues
+    if (error.message?.includes('API_KEY_MISSING')) {
+      throw new Error('API_KEY_MISSING: Please configure GEMINI_API_KEY in environment variables');
+    }
     
     // Check for quota exceeded
     if (error.message?.includes('quota') || error.message?.includes('429')) {
       throw new Error('QUOTA_EXCEEDED: Daily API limit reached. Please try again tomorrow or upgrade your plan.');
+    }
+    
+    // Check for invalid API key
+    if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('invalid') || error.status === 400) {
+      throw new Error('API_KEY_INVALID: The Gemini API key is invalid. Please check your configuration.');
     }
     
     // Fallback Mock if API fails
