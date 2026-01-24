@@ -3,6 +3,11 @@ import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info, X, Calendar, TrendingUp } from 'lucide-react';
 
+// API URL: use relative path in production (Vercel), localhost in development
+const API_URL = import.meta.env.DEV 
+  ? 'http://localhost:5001'
+  : '';
+
 export default function Dashboard({ user }) {
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState('');
@@ -18,7 +23,7 @@ export default function Dashboard({ user }) {
     try {
       const token = await user.getIdToken();
       // Use 5001 as previously configured
-      const res = await fetch(`http://localhost:5001/api/search?q=${encodeURIComponent(searchQuery)}`, {
+      const res = await fetch(`${API_URL}/api/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -46,7 +51,7 @@ export default function Dashboard({ user }) {
     setIsSaving(true);
     try {
       const token = await user.getIdToken();
-      const res = await fetch('http://localhost:5001/api/save', {
+      const res = await fetch(`${API_URL}/api/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
