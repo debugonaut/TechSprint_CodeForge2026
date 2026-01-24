@@ -72,6 +72,9 @@ export default function Dashboard({ user }) {
       if (res.ok) {
         setUrl('');
         fetchItems(query);
+      } else if (res.status === 429) {
+        const errorData = await res.json();
+        alert('⚠️ Daily AI Quota Exceeded\n\nYou can only use 20 AI analysis requests per day on the free tier. Content was not saved.\n\nPlease try again tomorrow or upgrade your API plan.');
       } else {
         alert('Failed to save');
       }

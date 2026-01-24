@@ -40,7 +40,7 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
     }
 
     // 2. Prepare Prompt
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `
       You are RecallBin AI. Your goal is to summarize web content for future recall.
       
@@ -75,13 +75,19 @@ const summarizeContent = async ({ url, title, description, content_text, platfor
     return JSON.parse(text);
 
   } catch (error) {
-    console.error("AI Generation failed:", error);
-    // Fallback Mock if API fails (e.g. no key)
+    console.error("AI Generation failed:", error.message);
+    
+    // Check for quota exceeded
+    if (error.message?.includes('quota') || error.message?.includes('429')) {
+      throw new Error('QUOTA_EXCEEDED: Daily API limit reached. Please try again tomorrow or upgrade your plan.');
+    }
+    
+    // Fallback Mock if API fails
     return {
       content_type: "unknown",
-      summary: "Could not generate AI summary (Check API Key).",
-      key_ideas: ["Ensure GEMINI_API_KEY is set in backend/.env"],
-      tags: ["error", "setup-required"],
+      summary: "Could not generate AI summary. Error: " + error.message,
+      key_ideas: ["AI analysis failed"],
+      tags: ["error"],
       entities: [],
       tone: "neutral",
       confidence_level: "low",

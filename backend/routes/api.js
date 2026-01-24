@@ -44,6 +44,15 @@ router.post('/save', async (req, res) => {
 
   } catch (error) {
     console.error('Error in /save:', error);
+    
+    // Handle quota exceeded specifically
+    if (error.message?.includes('QUOTA_EXCEEDED')) {
+      return res.status(429).json({ 
+        error: 'API quota exceeded', 
+        message: 'Daily Gemini API limit reached. Content saved without AI analysis. Try again tomorrow.' 
+      });
+    }
+    
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
