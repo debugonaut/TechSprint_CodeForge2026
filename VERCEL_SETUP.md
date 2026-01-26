@@ -1,31 +1,47 @@
-# Vercel Environment Variables Setup
+# Environment Variables for Vercel
 
-After deployment, you need to add these environment variables in Vercel Dashboard:
+After pushing this code, add these environment variables in Vercel Dashboard:
 
-## Go to: https://vercel.com/your-project/settings/environment-variables
+## Go to: https://vercel.com/your-username/tech-sprint-code-forge2026/settings/environment-variables
 
-### Required Variables:
+Add the following:
 
-1. **GEMINI_API_KEY**
-   - Value: (Your Gemini API key)
-   - Scope: Production, Preview, Development
+### 1. GEMINI_API_KEY
+- **Value**: Your Gemini API key
+- **Scope**: Production, Preview, Development
 
-2. **FIREBASE_CONFIG** 
-   - Value: (Your Firebase service account JSON - entire file as one line)
-   - Scope: Production, Preview, Development
+### 2. FIREBASE_PROJECT_ID
+- **Value**: Your Firebase project ID (from Firebase Console)
+- **Scope**: Production, Preview, Development
 
-### How to Add:
-1. Go to your project in Vercel
-2. Settings → Environment Variables
-3. Add each variable
-4. Redeploy after adding variables
+### 3. FIREBASE_PRIVATE_KEY
+- **Value**: Your Firebase private key (from service account JSON)
+- **Important**: Copy the ENTIRE private key including `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----`
+- **Scope**: Production, Preview, Development
 
-### Production URLs:
-After deployment, update extension files with:
-- API_URL: https://your-project.vercel.app/api
-- DASHBOARD_URL: https://your-project.vercel.app
+### 4. FIREBASE_CLIENT_EMAIL  
+- **Value**: Your Firebase client email (from service account JSON)
+- **Scope**: Production, Preview, Development
 
-### Firebase Setup:
-Don't forget to add your Vercel domain to Firebase:
-- Firebase Console → Authentication → Settings → Authorized domains
-- Add: your-project.vercel.app
+### 5. NODE_ENV
+- **Value**: production
+- **Scope**: Production
+
+## How to Find Firebase Credentials:
+
+Open: `backend/config/serviceAccountKey.json`
+
+Copy these values:
+- `project_id` → FIREBASE_PROJECT_ID
+- `private_key` → FIREBASE_PRIVATE_KEY (ENTIRE value with newlines)
+- `client_email` → FIREBASE_CLIENT_EMAIL
+
+## After Adding Variables:
+
+1. Go to Vercel Dashboard → Deployments
+2. Click "..." menu on latest deployment
+3. Click "Redeploy"
+4. Wait ~2 minutes for deployment
+
+Your backend will then be live at:
+`https://tech-sprint-code-forge2026.vercel.app/api`

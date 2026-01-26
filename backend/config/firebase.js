@@ -1,24 +1,34 @@
 const admin = require('firebase-admin');
 
-// On Vercel, we can't read a file easily. We will pass the JSON string as an ENV variable.
+// Initialize Firebase Admin with environment variables or local file
 let serviceAccount;
-try {
-  serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-    : require('./serviceAccountKey.json'); 
-} catch (error) {
-  console.error("Firebase Service Account missing or invalid. Search and save will fail.");
+
+if (process.env.FIREBASE_PROJECT_ID) {
+  // Vercel/Production: Use environment variables
+  serviceAccount = {
+    type: "service_account",
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  };
+} else {
+  // Local development: Use service account file
+  try {
+    serviceAccount = require('./serviceAccountKey.json');
+  } catch (error) {
+    console.error("Firebase Service Account file not found. Make sure serviceAccountKey.json exists.");
+  }
 }
 
-if (!admin.apps.length) {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        console.log('Firebase Admin Initialized.');
-    } catch (error) {
-        console.error('Firebase Admin Error:', error);
-    }
+if (!admin.apps.length && serviceAccount) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log('Firebase Admin Initialized.');
+  } catch (error) {
+    console.error('Firebase Admin Error:', error);
+  }
 }
 
 const db = admin.firestore();
