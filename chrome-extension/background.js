@@ -167,6 +167,12 @@ function getAuthToken() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'itemSaved') {
     updateBadge();
+  } else if (message.action === 'saveAuthToken') {
+    // Save auth token from content script
+    chrome.storage.local.set({ authToken: message.token }, () => {
+      console.log('Auth token saved from web app');
+      updateBadge();
+    });
   }
 });
 

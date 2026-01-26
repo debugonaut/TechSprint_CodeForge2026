@@ -10,9 +10,24 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      
+      // Send auth token to Chrome extension if user is logged in
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken();
+          // Broadcast to content script which will forward to extension
+          window.postMessage({ 
+            type: 'RECALLBIN_AUTH_TOKEN', 
+            token 
+          }, '*');
+          console.log('Auth token sent to extension');
+        } catch (error) {
+          console.error('Error getting auth token:', error);
+        }
+      }
     });
     return () => unsubscribe();
   }, []);
