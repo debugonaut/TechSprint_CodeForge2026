@@ -274,3 +274,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 });
+
+// Also listen for storage changes (when token is saved from web app)
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.authToken) {
+    // Auth token was updated, reload the popup
+    console.log('Auth token detected, reloading popup...');
+    setTimeout(() => location.reload(), 500);
+  }
+});
