@@ -1,5 +1,6 @@
-// Configuration - Production URLs
-const API_URL = 'https://tech-sprint-code-forge2026.vercel.app/api';
+// Configuration
+// NOTE: Backend is running locally. For production, deploy backend separately.
+const API_URL = 'http://localhost:5001';
 const DASHBOARD_URL = 'https://tech-sprint-code-forge2026.vercel.app';
 
 // DOM Elements
