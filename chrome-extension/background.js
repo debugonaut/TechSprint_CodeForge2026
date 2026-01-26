@@ -57,7 +57,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         // Show success notification
         chrome.notifications.create({
           type: 'basic',
-          iconUrl: 'icons/icon48.png',
           title: 'RecallBin',
           message: 'Saved successfully! ✓'
         });
@@ -67,7 +66,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       } else if (response.status === 409) {
         chrome.notifications.create({
           type: 'basic',
-          iconUrl: 'icons/icon48.png',
           title: 'RecallBin',
           message: 'URL already saved!'
         });
@@ -78,7 +76,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       console.error('Error saving from context menu:', error);
       chrome.notifications.create({
         type: 'basic',
-        iconUrl: 'icons/icon48.png',
         title: 'RecallBin Error',
         message: 'Failed to save. Please try again.'
       });
@@ -110,7 +107,6 @@ async function checkReminders() {
     if (data.unreadCount > 0) {
       chrome.notifications.create({
         type: 'basic',
-        iconUrl: 'icons/icon128.png',
         title: '🔔 Time to Review!',
         message: `You have ${data.unreadCount} items saved a week ago. Click to review!`,
         requireInteraction: true
