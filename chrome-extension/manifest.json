@@ -12,7 +12,8 @@
   ],
   "host_permissions": [
     "http://localhost:5001/*",
-    "https://*.vercel.app/*"
+    "http://localhost:5173/*",
+    "https://tech-sprint-code-forge2026.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html"
@@ -22,7 +23,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://localhost:5173/*", "https://*.vercel.app/*"],
+      "matches": [
+        "http://localhost:5173/*",
+        "https://tech-sprint-code-forge2026.vercel.app/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_end"
     }

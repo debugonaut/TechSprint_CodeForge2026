@@ -3,7 +3,12 @@
   // Listen for auth events from the RecallBin web app
   window.addEventListener('message', (event) => {
     // Verify origin for security
-    if (event.origin !== 'http://localhost:5173' && !event.origin.includes('vercel.app')) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://tech-sprint-code-forge2026.vercel.app'
+    ];
+    
+    if (!allowedOrigins.includes(event.origin)) {
       return;
     }
 

@@ -1,6 +1,6 @@
-// Configuration
-const API_URL = 'http://localhost:5001'; // Change to your deployed URL later
-const DASHBOARD_URL = 'http://localhost:5173'; // Change to your deployed URL later
+// Configuration - Production URLs
+const API_URL = 'https://tech-sprint-code-forge2026.vercel.app/api';
+const DASHBOARD_URL = 'https://tech-sprint-code-forge2026.vercel.app';
 
 // DOM Elements
 let saveBtn, collectionSelect, pageTitle, recentItems;
