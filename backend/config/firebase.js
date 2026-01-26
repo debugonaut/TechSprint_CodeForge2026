@@ -3,8 +3,15 @@ const admin = require('firebase-admin');
 // Initialize Firebase Admin with environment variables or local file
 let serviceAccount;
 
-if (process.env.FIREBASE_PROJECT_ID) {
-  // Vercel/Production: Use environment variables
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  // Vercel: Parse JSON service account
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } catch (error) {
+    console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT:', error);
+  }
+} else if (process.env.FIREBASE_PROJECT_ID) {
+  // Vercel/Production: Use individual environment variables
   serviceAccount = {
     type: "service_account",
     project_id: process.env.FIREBASE_PROJECT_ID,
