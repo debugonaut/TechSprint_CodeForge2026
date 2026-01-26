@@ -2,8 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-background: #09090b;
+  --color-surface: #18181b;
+  --color-text: #ffffff;
+  --color-text-secondary: #a1a1aa;
+}
+
+html.light {
+  --color-background: #ffffff;
+  --color-surface: #f4f4f5;
+  --color-text: #09090b;
+  --color-text-secondary: #52525b;
+}
+
+html.light body {
+  @apply bg-white text-gray-900;
+}
+
+html.light .bg-background {
+  background-color: #ffffff !important;
+}
+
+html.light .bg-surface {
+  background-color: #f4f4f5 !important;
+}
+
+html.light .text-white {
+  color: #09090b !important;
+}
+
+html.light .text-gray-400 {
+  color: #71717a !important;
+}
+
+html.light .text-gray-500 {
+  color: #52525b !important;
+}
+
+html.light .border-white\/5,
+html.light .border-white\/10 {
+  border-color: #e4e4e7 !important;
+}
+
 body {
   @apply bg-background text-white antialiased;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 /* Custom Scrollbar */
@@ -19,4 +64,14 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #52525b; 
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
 }
