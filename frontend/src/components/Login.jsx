@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebase';
 import { motion } from 'framer-motion';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Brain } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import ThemeToggle from './ThemeToggle';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,57 +53,74 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-white flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-purple-900/20 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-indigo-900/20 blur-[150px] rounded-full" />
+    <div className="min-h-screen bg-app text-primary flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Soft gradient backgrounds - ChronoTask style */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary-light/10 dark:bg-primary-light/5 rounded-full blur-3xl" />
+      
+      {/* Header with back button */}
+      <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-10">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-secondary hover:text-primary transition-colors"
+        >
+          <Brain className="w-5 h-5 text-primary" />
+          <span className="font-semibold text-primary">Recallr</span>
+        </button>
+        <ThemeToggle />
       </div>
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-surface/50 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl"
+        className="w-full max-w-md bg-surface/80 backdrop-blur-xl border border-default p-10 rounded-3xl shadow-2xl relative z-10"
       >
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-purple-500/20">
-            <span className="font-bold text-white text-xl">R</span>
+        {/* Logo and Header */}
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-dark rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl shadow-primary/20">
+            <Brain className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-            {isRegistering ? 'Join Recallr' : 'Welcome Back'}
+          <h2 className="text-4xl font-bold mb-3">
+            <span className="text-primary block">
+              {isRegistering ? 'Join Recallr' : 'Welcome Back'}
+            </span>
           </h2>
-          <p className="text-gray-500 mt-2 text-sm">
+          <p className="text-muted text-base">
             {isRegistering ? 'Create your personal memory bank.' : 'Access your second brain.'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm text-center"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs text-gray-400 ml-1">Email</label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm text-muted ml-1 font-medium">Email</label>
             <input 
               type="email" 
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required 
-              className="w-full bg-black/30 border border-white/5 rounded-xl py-3 px-4 text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+              className="w-full bg-elevated border-2 border-default rounded-2xl py-4 px-5 text-base text-primary focus:border-primary/50 focus:ring-0 outline-none transition-all placeholder:text-muted"
               placeholder="name@example.com"
             />
           </div>
-          <div className="space-y-1">
-             <label className="text-xs text-gray-400 ml-1">Password</label>
+          <div className="space-y-2">
+            <label className="text-sm text-muted ml-1 font-medium">Password</label>
             <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
-              className="w-full bg-black/30 border border-white/5 rounded-xl py-3 px-4 text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all"
+              className="w-full bg-elevated border-2 border-default rounded-2xl py-4 px-5 text-base text-primary focus:border-primary/50 focus:ring-0 outline-none transition-all placeholder:text-muted"
               placeholder="••••••••"
             />
           </div>
@@ -108,7 +128,7 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-white text-black font-bold py-3.5 rounded-xl mt-6 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            className="w-full bg-primary hover:scale-[1.02] active:scale-[0.98] text-white font-bold py-4 rounded-full mt-8 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <Loader2 className="animate-spin" size={20} /> : (
               <>
@@ -120,12 +140,12 @@ export default function Login() {
         </form>
 
         {/* Divider */}
-        <div className="relative my-6">
+        <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
+            <div className="w-full border-t border-default" />
           </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="px-2 bg-surface/50 text-gray-500">OR</span>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-3 bg-surface text-muted font-medium">OR</span>
           </div>
         </div>
 
@@ -133,7 +153,7 @@ export default function Login() {
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full bg-white/10 hover:bg-white/20 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-elevated hover:bg-surface border-2 border-default hover:border-primary/30 text-primary font-semibold py-4 rounded-full transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -144,10 +164,10 @@ export default function Login() {
           {isRegistering ? 'Sign up with Google' : 'Sign in with Google'}
         </button>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <button 
             onClick={() => setIsRegistering(!isRegistering)}
-            className="text-xs text-gray-400 hover:text-white transition-colors"
+            className="text-sm text-muted hover:text-primary transition-colors font-medium"
           >
             {isRegistering ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
           </button>
