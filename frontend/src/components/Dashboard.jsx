@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, Hash, Info, X, Calendar, TrendingUp, Trash2, FolderOpen, Download, BarChart3, MessageCircle, Folder, Bell, AlertCircle } from 'lucide-react';
+import { 
+  Search, Plus, LogOut, Loader2, Link as LinkIcon, ExternalLink, 
+  Hash, Info, X, Calendar, TrendingUp, Trash2, FolderOpen, 
+  Download, BarChart3, MessageCircle, Folder, Bell, Home, Settings,
+  Video, Headphones, Music, Code, Newspaper, Globe, Image as ImageIcon, 
+  BookOpen, Github, Twitter, Linkedin, Briefcase, DollarSign, Brain, Command,
+  Layout, MessageSquare
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import CollectionDialog from './CollectionDialog';
 import ExportDialog from './ExportDialog';
 import StatsDialog from './StatsDialog';
 import ChatDialog from './ChatDialog';
+import ReminderDialog from './ReminderDialog';
 import ThemeToggle from './ThemeToggle';
+import SpotlightCard from './SpotlightCard';
 
 // API URL: use relative path in production (Vercel), localhost in development
 const API_URL = import.meta.env.DEV 
@@ -32,6 +41,7 @@ export default function Dashboard({ user }) {
   const [showExport, setShowExport] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showReminders, setShowReminders] = useState(false);
 
   // Collections & Reminders
   const [collections, setCollections] = useState([]);
@@ -211,6 +221,20 @@ export default function Dashboard({ user }) {
     }
   };
 
+  const getCategoryIcon = (category) => {
+    const cat = category?.toLowerCase() || '';
+    if (cat.includes('video') || cat.includes('youtube')) return <Video size={14} />;
+    if (cat.includes('music') || cat.includes('audio') || cat.includes('spotify')) return <Music size={14} />;
+    if (cat.includes('tech') || cat.includes('code') || cat.includes('dev')) return <Code size={14} />;
+    if (cat.includes('news') || cat.includes('article') || cat.includes('blog')) return <Newspaper size={14} />;
+    if (cat.includes('image') || cat.includes('photo') || cat.includes('design')) return <ImageIcon size={14} />;
+    if (cat.includes('finance') || cat.includes('money') || cat.includes('crypto')) return <DollarSign size={14} />;
+    if (cat.includes('work') || cat.includes('job') || cat.includes('career')) return <Briefcase size={14} />;
+    if (cat.includes('social') || cat.includes('twitter') || cat.includes('linkedin')) return <MessageSquare size={14} />;
+    if (cat.includes('book') || cat.includes('novel')) return <BookOpen size={14} />;
+    return <Globe size={14} />;
+  };
+
   // Apply filters
   useEffect(() => {
     fetchItems(query, { category: selectedCategory, collectionId: selectedCollection });
@@ -222,281 +246,271 @@ export default function Dashboard({ user }) {
     : items.filter(item => item.ai_output?.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-background text-white p-4 md:p-8 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-900/20 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/20 blur-[120px] rounded-full" />
+    <div className="min-h-screen bg-app text-secondary p-4 md:p-8 relative overflow-hidden pb-32">
+       {/* Ambient Background Glows */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full animate-pulse-slow" />
+         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/5 blur-[120px] rounded-full animate-pulse-slow" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Reminder Banner */}
-      {showReminderBanner && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-5xl mx-auto mb-4 bg-primary/10 border border-primary/30 rounded-xl p-4 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-3">
-            <Bell className="text-primary" size={20} />
-            <div>
-              <div className="font-semibold text-sm">Time to Review!</div>
-              <div className="text-xs text-gray-400">You have {reminderCount} items saved a week ago that need your attention.</div>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowReminderBanner(false)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <X size={16} />
-          </button>
-        </motion.div>
-      )}
+      <header className="max-w-7xl mx-auto flex justify-between items-center mb-10">
+        <div className="flex items-center gap-3 select-none">
+             <Brain className="text-primary w-8 h-8" />
+             <div className="hidden md:block">
+              <h1 className="text-2xl font-semibold text-primary tracking-tight">Recallr</h1>
+              <p className="text-xs text-muted font-medium tracking-wide">Neural Dashboard</p>
+             </div>
+        </div>
 
-      <header className="max-w-5xl mx-auto flex justify-between items-center mb-8">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
-        >
-          <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-            <span className="font-bold text-white">R</span>
-          </div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">RecallBin</h1>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2"
-        >
-          {/* Quota Indicator */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-white/5 text-xs">
-            <span className="text-gray-400">Quota:</span>
-            <span className={quota.remaining < 5 ? 'text-red-400 font-semibold' : 'text-primary font-semibold'}>
-              {quota.remaining}/{quota.limit}
-            </span>
-          </div>
-
-          <ThemeToggle />
-          
-          <button 
-            onClick={() => setShowStats(true)}
-            className="p-2 rounded-lg bg-surface hover:bg-white/10 transition-colors border border-white/5"
-            title="View Analytics"
-          >
-            <BarChart3 size={18} />
-          </button>
-
-          <button 
-            onClick={() => setShowCollections(true)}
-            className="p-2 rounded-lg bg-surface hover:bg-white/10 transition-colors border border-white/5"
-            title="Manage Collections"
-          >
-            <Folder size={18} />
-          </button>
-
-          <button 
-            onClick={() => setShowExport(true)}
-            className="p-2 rounded-lg bg-surface hover:bg-white/10 transition-colors border border-white/5"
-            title="Export Data"
-          >
-            <Download size={18} />
-          </button>
-
-          <button 
-            onClick={() => auth.signOut()}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface hover:bg-white/10 transition-colors border border-white/5 text-sm"
-          >
-            <LogOut size={16} />
-            <span className="hidden md:inline">Sign Out</span>
-          </button>
-        </motion.div>
+        <div className="flex items-center gap-4">
+             {/* Quota Pulse */}
+             <div className="flex items-center gap-3 px-4 py-2 bg-surface/50 border border-default rounded-full backdrop-blur-md">
+                <div className="relative w-2 h-2">
+                   <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${quota.remaining < 5 ? 'bg-red-400' : 'bg-green-400'}`}></span>
+                   <span className={`relative inline-flex rounded-full h-2 w-2 ${quota.remaining < 5 ? 'bg-red-500' : 'bg-green-500'}`}></span>
+                </div>
+                <span className="text-xs font-medium text-muted">
+                    {quota.remaining} saves left
+                </span>
+             </div>
+             
+             <ThemeToggle />
+             <button onClick={() => auth.signOut()} className="p-2 hover:text-red-400 transition-colors" title="Sign Out">
+                 <LogOut size={20} />
+             </button>
+        </div>
       </header>
 
-      <main className="max-w-5xl mx-auto space-y-6">
-        {/* Input Section */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full"
-        >
-          <div className="relative group p-[1px] rounded-2xl bg-gradient-to-r from-primary/50 to-secondary/50">
-            <div className="bg-surface rounded-2xl p-4 md:p-6 backdrop-blur-xl">
-              <form onSubmit={handleSave} className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="relative flex-1">
-                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                    <input 
-                      type="url" 
-                      placeholder="Paste a URL to recall later..." 
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/50 focus:outline-none transition-all placeholder:text-gray-600"
-                      required
-                    />
-                  </div>
-                  <button 
-                    type="submit" 
-                    disabled={isSaving || quota.remaining === 0}
-                    className="bg-white text-black font-semibold rounded-xl px-6 md:px-8 py-3 hover:scale-105 active:scale-95 transition-all text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSaving ? <Loader2 className="animate-spin" size={18}/> : <Plus size={18}/>}
-                    <span className="hidden md:inline">{isSaving ? 'Saving...' : 'Save'}</span>
-                  </button>
-                </div>
+      <main className="max-w-7xl mx-auto space-y-12">
+        {/* SYNAPSE BAR: Combined Search & Save */}
+        <div className="max-w-3xl mx-auto relative z-20 group">
+           <div className={`absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-1000 group-hover:duration-200 ${isSaving ? 'animate-pulse opacity-60' : ''}`} />
+           <div className="relative bg-surface border border-default rounded-2xl shadow-2xl flex items-center p-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+              {/* Dynamic Icon */}
+              <div className="pl-4 pr-2 text-muted">
+                 {url.startsWith('http') ? <Plus className="text-primary animate-bounce" size={24}/> : <Search className="" size={24}/>}
+              </div>
+              
+              {/* Intelligent Input */}
+              <input 
+                type="text"
+                value={url || query}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.startsWith('http')) {
+                        setUrl(val);
+                        setQuery('');
+                    } else {
+                        setQuery(val);
+                        setUrl('');
+                    }
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        if (url) handleSave(e);
+                        else handleSearch(e);
+                    }
+                }}
+                placeholder="Paste a URL to save... or type to search memories..."
+                className="w-full bg-transparent border-none focus:ring-0 text-lg py-3 placeholder:text-muted/50 text-secondary focus:outline-none"
+              />
 
-                {/* Collection Selector */}
-                {collections.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <FolderOpen size={16} className="text-gray-400" />
-                    <select
-                      value={selectedCollection}
-                      onChange={(e) => setSelectedCollection(e.target.value)}
-                      className="bg-black/30 border border-white/5 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-primary/50 focus:outline-none"
-                    >
-                      <option value="all">No Collection</option>
-                      {collections.map(col => (
-                        <option key={col.id} value={col.id}>{col.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </form>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* Search Section */}
-        <section className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by topic, summary, or tag..." 
-            value={query} 
-            onChange={e => { setQuery(e.target.value); }} 
-            onKeyPress={e => e.key === 'Enter' && handleSearch(e)}
-            className="w-full bg-surface/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 focus:bg-surface focus:ring-1 focus:ring-primary/30 focus:outline-none transition-all text-sm text-gray-300 placeholder:text-gray-600"
-          />
-        </section>
-
-        {/* Filter Tabs */}
-        <section className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-primary text-white'
-                  : 'bg-surface/50 text-gray-400 hover:bg-surface hover:text-white'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                {cat === 'all' && <FolderOpen size={14} />}
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                {cat !== 'all' && ` (${items.filter(i => i.ai_output?.category === cat).length})`}
-              </span>
-            </button>
-          ))}
-        </section>
-
-        {/* Items Grid */}
-        {loading && filteredItems.length === 0 ? (
-           <div className="flex justify-center p-12">
-             <Loader2 className="animate-spin text-primary" size={32} />
+              {/* Action Button */}
+              <button 
+                 onClick={url ? handleSave : handleSearch}
+                 disabled={isSaving || (url && quota.remaining === 0)}
+                 className={`px-6 py-2 rounded-xl font-bold transition-all ${
+                     url 
+                     ? 'bg-primary text-white hover:scale-105 shadow-lg shadow-primary/25' 
+                     : 'bg-surface border border-default text-muted hover:text-primary'
+                 }`}
+              >
+                 {isSaving ? <Loader2 className="animate-spin" /> : (url ? 'Save to Brain' : 'Recall')}
+              </button>
            </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {filteredItems.map((item, index) => (
-                <motion.div 
-                  key={item.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="group bg-surface/40 hover:bg-surface/60 border border-white/5 hover:border-primary/20 backdrop-blur-md rounded-xl p-5 transition-all hover:-translate-y-1 flex flex-col h-full relative"
+           {/* Context Hints */}
+           <div className="absolute top-full mt-2 left-4 text-xs text-muted flex gap-4">
+              <span>Press <kbd className="font-sans bg-surface/50 px-1 rounded border border-default">↵</kbd> to action</span>
+              {collections.length > 0 && selectedCollection !== 'all' && (
+                 <span className="text-primary">• Saving to: {collections.find(c => c.id === selectedCollection)?.name}</span>
+              )}
+           </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-2 relative z-10">
+            {categories.map(cat => (
+                <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                    selectedCategory === cat
+                    ? 'text-white'
+                    : 'text-muted hover:text-primary'
+                }`}
                 >
-                  {/* Delete Button */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                    title="Delete"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {selectedCategory === cat && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/25 -z-10"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {cat === 'all' ? <Layout size={14} /> : getCategoryIcon(cat)}
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </span>
+                </button>
+            ))}
+        </div>
 
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-3 gap-2" onClick={() => handleItemView(item)}>
-                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors cursor-pointer">
-                      {item.ai_output?.title || item.raw_input?.title || "Processing..."}
-                    </h3>
-                    <a href={item.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors" onClick={(e) => e.stopPropagation()}>
-                      <ExternalLink size={14} />
-                    </a>
-                  </div>
+        {/* MASONRY GRID: Memories */}
+        {loading ? (
+             <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" size={40} /></div>
+        ) : filteredItems.length === 0 ? (
+             <div className="flex flex-col items-center justify-center py-20 gap-6">
+                 <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                    <Brain size={64} className="relative text-primary/80" />
+                 </div>
+                 
+                 <div className="text-center space-y-2 max-w-md">
+                    <h3 className="text-2xl font-semibold text-secondary">Your brain is quiet... too quiet.</h3>
+                    <p className="text-muted">Start by saving a link, or try searching for inspiration:</p>
+                 </div>
 
-                  {/* Summary */}
-                  <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-4 flex-1 cursor-pointer" onClick={() => handleItemView(item)}>
-                    {item.ai_output?.summary || "AI is analyzing this content..."}
-                  </p>
+                 {/* Starter Pack Chips */}
+                 <div className="flex flex-wrap justify-center gap-3">
+                    {['Future of AI', 'React Design Patterns', 'Space Exploration', 'Healthy Recipes'].map((prompt) => (
+                        <button
+                           key={prompt}
+                           onClick={() => setQuery(prompt)}
+                           className="px-4 py-2 bg-surface border border-default rounded-full text-sm text-muted hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center gap-2"
+                        >
+                           <Search size={14} />
+                           {prompt}
+                        </button>
+                    ))}
+                 </div>
+             </div>
+        ) : (
+             <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 mx-auto pb-20">
+                <AnimatePresence>
+                    {filteredItems.map((item, index) => (
+                        <SpotlightCard 
+                           key={item.id}
+                           className="break-inside-avoid bg-surface border border-default rounded-2xl hover:border-primary/50 transition-all group cursor-pointer shadow-sm hover:shadow-xl"
+                           onClick={() => handleItemView(item)}
+                        >
+                           <div className="p-6">
+                               <div className="flex justify-between items-start mb-4">
+                                   <div className="flex items-center gap-2 text-xs text-primary font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20">
+                                       {getCategoryIcon(item.ai_output?.category)}
+                                       <span>{item.ai_output?.category || 'General'}</span>
+                                   </div>
+                                   <button 
+                                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                                      className="text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                   >
+                                       <Trash2 size={16} />
+                                   </button>
+                               </div>
 
-                  {/* Footer Stats */}
-                  <div className="space-y-3 pt-3 border-t border-white/5">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {item.ai_output?.tags?.slice(0, 3).map((tag, i) => (
-                        <div key={i} className="flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-full uppercase tracking-wider font-medium">
-                          <Hash size={10} />
-                          {tag}
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Meta */}
-                    <div className="flex justify-between items-center text-[10px] text-gray-500 font-mono">
-                      <span>{item.ai_output?.confidence_level?.toUpperCase() || 'UNKNOWN'} CONFIDENCE</span>
-                      <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-        
-        {!loading && filteredItems.length === 0 && items.length > 0 && (
-          <div className="text-center py-20 text-gray-600">
-            <Info className="mx-auto mb-2 opacity-50" size={32} />
-            <p>No items in this category.</p>
-          </div>
-        )}
-        
-        {!loading && items.length === 0 && (
-          <div className="text-center py-20 text-gray-600">
-            <Info className="mx-auto mb-2 opacity-50" size={32} />
-            <p>No memories found. Save something to get started.</p>
-          </div>
+                               <h3 className="text-lg font-bold text-secondary mb-2 leading-snug group-hover:text-primary transition-colors">
+                                   {item.ai_output?.title || item.raw_input?.title || "Processing..."}
+                               </h3>
+                               
+                               <p className="text-sm text-muted leading-relaxed mb-6 line-clamp-4">
+                                   {item.ai_output?.summary || "AI is analyzing this content..."}
+                               </p>
+
+                               <div className="flex items-center justify-between pt-4 border-t border-default/50 text-xs text-muted font-mono">
+                                   <div className="flex items-center gap-2">
+                                      <div className={`w-2 h-2 rounded-full ${item.ai_output ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
+                                      <span>{item.ai_output?.confidence_level?.toUpperCase() || 'UNKNOWN'} SCORE</span>
+                                   </div>
+                                   <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                               </div>
+                           </div>
+                        </SpotlightCard>
+                    ))}
+                </AnimatePresence>
+             </div>
         )}
       </main>
 
-      {/* Floating Chat Button */}
-      <button
-        onClick={() => setShowChat(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-primary to-secondary text-white p-4 rounded-full shadow-lg hover:scale-110 transition-all z-40"
-        title="Ask Your Brain"
-      >
-        <MessageCircle size={24} />
-      </button>
+      {/* FLOATING GLASS DOCK */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-surface/80 backdrop-blur-xl border border-default/50 rounded-2xl shadow-2xl px-6 py-3 flex items-center gap-6 z-40">
+           <button 
+             onClick={() => {
+                setSelectedCategory('all');
+                setSelectedCollection('all');
+                setQuery('');
+             }} 
+             className={`p-2 rounded-xl transition-all relative group ${selectedCategory === 'all' && !showStats && !showCollections && !showChat && !showReminders ? 'text-primary' : 'text-muted hover:text-primary hover:bg-primary/5'}`}
+           >
+              <Home size={24} />
+              {selectedCategory === 'all' && !showStats && !showCollections && !showChat && !showReminders && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_2px_rgba(139,92,246,0.5)]" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Home</span>
+           </button>
+           
+           <div className="w-px h-8 bg-default/50"></div>
 
-      {/* Detail Modal */}
-      <AnimatePresence>
+           <button 
+             onClick={() => setShowStats(true)} 
+             className={`p-2 rounded-xl transition-all relative group ${showStats ? 'text-primary' : 'text-muted hover:text-primary hover:bg-primary/5'}`}
+           >
+              <BarChart3 size={24} />
+              {showStats && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_2px_rgba(139,92,246,0.5)]" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Analytics</span>
+           </button>
+
+           <button 
+             onClick={() => setShowReminders(true)} 
+             className={`p-2 rounded-xl transition-all relative group ${showReminders ? 'text-primary' : 'text-muted hover:text-primary hover:bg-primary/5'}`}
+           >
+              <Bell size={24} />
+              {showReminders && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_2px_rgba(139,92,246,0.5)]" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Reminders</span>
+           </button>
+
+           <button 
+             onClick={() => setShowCollections(true)} 
+             className={`p-2 rounded-xl transition-all relative group ${showCollections ? 'text-primary' : 'text-muted hover:text-primary hover:bg-primary/5'}`}
+           >
+              <Folder size={24} />
+              {showCollections && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_2px_rgba(139,92,246,0.5)]" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Collections</span>
+           </button>
+           
+           <button 
+             onClick={() => setShowChat(true)} 
+             className={`p-3 rounded-xl transition-all relative group ${showChat ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-primary/10 text-primary hover:scale-110'}`}
+           >
+              <MessageCircle size={24} />
+              {showChat && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Ask AI</span>
+           </button>
+      </div>
+
+       {/* Modals & Dialogs (Preserved Logic) */}
+       <AnimatePresence>
         {selectedItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setSelectedItem(null)}
           >
             <motion.div
@@ -504,101 +518,67 @@ export default function Dashboard({ user }) {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-surface border border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl"
+              className="bg-surface border border-default rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-              {/* Title */}
-              <h2 className="text-3xl font-bold mb-2 pr-10 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                {selectedItem.ai_output?.title || selectedItem.raw_input?.title || "Saved Content"}
-              </h2>
-
-              {/* URL */}
-              <a
-                href={selectedItem.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary hover:underline text-sm mb-6 inline-flex items-center gap-2"
-              >
-                <ExternalLink size={14} />
-                Visit Source
-              </a>
-
-              {/* Meta Info */}
-              <div className="flex gap-4 mb-6 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Calendar size={14} />
-                  {new Date(selectedItem.created_at).toLocaleDateString()}
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp size={14} />
-                  {selectedItem.ai_output?.confidence_level?.toUpperCase() || "UNKNOWN"} Confidence
-                </div>
+              <div className="absolute top-0 right-0 p-4">
+                  <button
+                    onClick={() => setSelectedItem(null)}
+                    className="p-2 rounded-full bg-black/10 hover:bg-black/20 text-muted transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
               </div>
 
-              {/* Summary */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Summary</h3>
-                <p className="text-gray-300 leading-relaxed">
-                  {selectedItem.ai_output?.summary || "No summary available."}
-                </p>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-1 rounded">
+                       {getCategoryIcon(selectedItem.ai_output?.category)}
+                       {selectedItem.ai_output?.category || 'Uncategorized'}
+                    </span>
+                    <span className="text-xs text-muted font-mono">{new Date(selectedItem.created_at).toLocaleDateString()}</span>
+                 </div>
+                 <h2 className="text-3xl font-bold text-secondary mt-2 leading-tight">
+                    {selectedItem.ai_output?.title || selectedItem.raw_input?.title || "Saved Content"}
+                 </h2>
+                 <a href={selectedItem.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-primary hover:underline mt-4 text-sm font-medium bg-primary/5 px-3 py-2 rounded-lg border border-primary/10 hover:border-primary/30 transition-colors">
+                    <ExternalLink size={14} /> Visit Source
+                 </a>
               </div>
 
-              {/* Key Ideas */}
+              <div className="bg-elevated/50 rounded-2xl p-6 border border-default mb-8">
+                  <h3 className="font-bold text-secondary mb-2 flex items-center gap-2">
+                     <Brain size={16} className="text-primary" />
+                     AI Summary
+                  </h3>
+                  <p className="text-muted leading-relaxed">
+                      {selectedItem.ai_output?.summary || "No summary available."}
+                  </p>
+              </div>
+
               {selectedItem.ai_output?.key_ideas && selectedItem.ai_output.key_ideas.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Key Ideas</h3>
-                  <ul className="list-disc list-inside space-y-1 text-gray-300">
+                <div className="mb-8">
+                  <h3 className="font-bold text-secondary mb-3">Key Concepts</h3>
+                  <ul className="space-y-3">
                     {selectedItem.ai_output.key_ideas.map((idea, i) => (
-                      <li key={i}>{idea}</li>
+                      <li key={i} className="flex gap-3 text-muted">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0"></div>
+                          {idea}
+                      </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Tags */}
-              {selectedItem.ai_output?.tags && selectedItem.ai_output.tags.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedItem.ai_output.tags.map((tag, i) => (
-                      <div key={i} className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full uppercase tracking-wider font-medium">
-                        <Hash size={12} />
-                        {tag}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Entities */}
-              {selectedItem.ai_output?.entities && selectedItem.ai_output.entities.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Entities</h3>
-                  <p className="text-gray-300">{selectedItem.ai_output.entities.join(", ")}</p>
-                </div>
-              )}
-
-              {/* Delete Button in Modal */}
-              <button
-                onClick={() => handleDelete(selectedItem.id)}
-                className="w-full mt-4 py-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                <Trash2 size={18} />
-                Delete This Item
-              </button>
+              <div className="flex justify-end gap-4 pt-6 border-t border-default">
+                  <button onClick={() => handleDelete(selectedItem.id)} className="text-red-400 hover:text-red-500 text-sm font-medium flex items-center gap-2 px-4 py-2 hover:bg-red-500/10 rounded-lg transition-colors">
+                      <Trash2 size={16} /> Delete Memory
+                  </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Dialogs */}
       <CollectionDialog 
         isOpen={showCollections} 
         onClose={() => setShowCollections(false)} 
@@ -619,6 +599,11 @@ export default function Dashboard({ user }) {
         isOpen={showChat} 
         onClose={() => setShowChat(false)} 
         user={user}
+      />
+      
+      <ReminderDialog 
+         isOpen={showReminders} 
+         onClose={() => setShowReminders(false)} 
       />
     </div>
   );
