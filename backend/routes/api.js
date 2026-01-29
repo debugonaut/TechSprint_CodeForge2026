@@ -195,7 +195,50 @@ router.get('/quota', async (req, res) => {
   }
 });
 
-// DELETE /api/delete/:id
+// PUT /api/update/:id
+router.put('/update/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { collectionId, title, summary } = req.body; // Allow updating these fields
+    const userId = req.user.uid;
+
+    const docRef = db.collection('users').doc(userId).collection('saved_content').doc(id);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+        return res.status(404).json({ error: 'Item not found' });
+    }
+
+    const updates = {
+        updated_at: new Date().toISOString()
+    };
+    
+    if (collectionId !== undefined) updates.collectionId = collectionId;
+    if (title) updates['ai_output.title'] = title; // Dot notation for nested fields
+    // Add other fields as needed
+
+    await docRef.update(updates);
+
+    // Simple collection count update (increment target only for now)
+    if (collectionId) {
+        const collectionRef = db.collection('users').doc(userId).collection('collections').doc(collectionId);
+        const colDoc = await collectionRef.get();
+        if (colDoc.exists) {
+            await collectionRef.update({
+                item_count: (colDoc.data().item_count || 0) + 1,
+                updated_at: new Date().toISOString()
+            });
+        }
+    }
+
+    res.json({ message: 'Content updated successfully', id, updates });
+
+  } catch (error) {
+    console.error('Error in /update:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 router.delete('/delete/:id', async (req, res) => {
   try {
     const { id } = req.params;
