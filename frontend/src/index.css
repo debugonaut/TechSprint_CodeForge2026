@@ -10,39 +10,41 @@
   }
 
   :root {
-    /* Dark mode (default) - Black + Beige */
-    --bg: #000000;
-    --bg-elevated: #0a0a0a;
-    --surface: #141414;
-    --border: #2a2a2a;
-    --text: #d4c5b9;
-    --text-muted: #b8a99a;
+    /* DEFAULT (Light Mode Toggled On) - now "Deep Purple" Theme */
+    /* User request: "reverse" -> Purple for Light */
+    --bg: #05010d; /* Very deep purple */
+    --bg-elevated: #0f0518;
+    --surface: #1a0b2e; /* Rich purple surface */
+    --border: #2e1065; /* Deep violet border */
+    --text: #e9d5ff; /* Light purple text */
+    --text-muted: #a78bfa; /* Muted purple */
     --text-primary: #ffffff;
-    --accent: #a78bfa;
+    --accent: #d8b4fe;
   }
 
   .dark {
-    /* Explicit dark mode - Black + Beige */
+    /* TOGGLED ON (Dark Mode) - now "Pitch Black" Theme */
+    /* User request: "reverse" -> Black for Dark */
     --bg: #000000;
     --bg-elevated: #0a0a0a;
-    --surface: #141414;
-    --border: #2a2a2a;
-    --text: #d4c5b9;
-    --text-muted: #b8a99a;
+    --surface: #121212;
+    --border: #27272a;
+    --text: #e4e4e7;
+    --text-muted: #a1a1aa;
     --text-primary: #ffffff;
     --accent: #a78bfa;
   }
 
   :root:not(.dark) {
-    /* Light mode - Beige + Black */
-    --bg: #f5f1ed;
-    --bg-elevated: #ebe6e0;
-    --surface: #ffffff;
-    --border: #d1c7bf;
-    --text: #000000;
-    --text-muted: #1a1a1a;
-    --text-primary: #000000;
-    --accent: #7c3aed;
+      /* Redundant fallback matches Light Mode */
+      --bg: #05010d;
+      --bg-elevated: #0f0518;
+      --surface: #1a0b2e;
+      --border: #2e1065;
+      --text: #e9d5ff;
+      --text-muted: #a78bfa;
+      --text-primary: #ffffff;
+      --accent: #d8b4fe;
   }
 
   body {

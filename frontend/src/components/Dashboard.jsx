@@ -7,7 +7,7 @@ import {
   Download, BarChart3, MessageCircle, Folder, Bell, Home, Settings,
   Video, Headphones, Music, Code, Newspaper, Globe, Image as ImageIcon, 
   BookOpen, Github, Twitter, Linkedin, Briefcase, DollarSign, Brain, Command,
-  Layout, MessageSquare
+  Layout, MessageSquare, FolderPlus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CollectionDialog from './CollectionDialog';
@@ -42,6 +42,7 @@ export default function Dashboard({ user }) {
   const [showStats, setShowStats] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showReminders, setShowReminders] = useState(false);
+  const [itemForCollection, setItemForCollection] = useState(null);
 
   // Collections & Reminders
   const [collections, setCollections] = useState([]);
@@ -408,12 +409,21 @@ export default function Dashboard({ user }) {
                                        {getCategoryIcon(item.ai_output?.category)}
                                        <span>{item.ai_output?.category || 'General'}</span>
                                    </div>
-                                   <button 
-                                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                                      className="text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                                   >
-                                       <Trash2 size={16} />
-                                   </button>
+                                   <div className="flex gap-2">
+                                       <button 
+                                          onClick={(e) => { e.stopPropagation(); setItemForCollection(item); }}
+                                          className="text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-primary/10 rounded"
+                                          title="Add to Collection"
+                                       >
+                                           <FolderPlus size={16} />
+                                       </button>
+                                       <button 
+                                          onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
+                                          className="text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/10 rounded"
+                                       >
+                                           <Trash2 size={16} />
+                                       </button>
+                                   </div>
                                </div>
 
                                <h3 className="text-lg font-bold text-secondary mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">
@@ -605,6 +615,86 @@ export default function Dashboard({ user }) {
          isOpen={showReminders} 
          onClose={() => setShowReminders(false)} 
       />
+
+       {/* Add To Collection Modal */}
+       <AnimatePresence>
+        {itemForCollection && (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                onClick={() => setItemForCollection(null)}
+            >
+                <motion.div
+                    initial={{ scale: 0.95 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0.95 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-surface border border-default rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6"
+                >
+                    <h3 className="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+                        <FolderPlus size={20} className="text-primary" />
+                        Add to Collection
+                    </h3>
+                    
+                    {collections.length === 0 ? (
+                        <div className="text-center py-8">
+                            <p className="text-muted text-sm mb-4">No collections found.</p>
+                            <button 
+                                onClick={() => { setItemForCollection(null); setShowCollections(true); }}
+                                className="text-primary text-sm hover:underline"
+                            >
+                                Create New Collection
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                            {collections.map(col => (
+                                <button
+                                    key={col.id}
+                                    onClick={async () => {
+                                        const toastId = toast.loading('Adding to collection...');
+                                        try {
+                                            const token = await user.getIdToken();
+                                            await fetch(`${API_URL}/api/update/${itemForCollection.id}`, {
+                                                method: 'PUT',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${token}`
+                                                },
+                                                body: JSON.stringify({ collectionId: col.id })
+                                            });
+                                            toast.success(`Added to "${col.name}"`, { id: toastId });
+                                            setItemForCollection(null);
+                                            // Refresh items to update UI if currently viewing a filtered list? 
+                                            // For now just close.
+                                            fetchItems(query, { category: selectedCategory, collectionId: selectedCollection });
+                                        } catch (err) {
+                                            console.error(err);
+                                            toast.error('Failed to add to collection', { id: toastId });
+                                        }
+                                    }}
+                                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-default transition-all group text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                            <Folder size={16} />
+                                        </div>
+                                        <span className="text-secondary font-medium">{col.name}</span>
+                                    </div>
+                                    {itemForCollection.collectionId === col.id && (
+                                        <div className="text-xs text-primary bg-primary/10 px-2 py-1 rounded">Current</div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            </motion.div>
+        )}
+       </AnimatePresence>
+
     </div>
   );
 }
