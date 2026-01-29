@@ -253,7 +253,7 @@ export default function Dashboard({ user }) {
          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/5 blur-[120px] rounded-full animate-pulse-slow" style={{ animationDelay: '2s' }} />
       </div>
 
-      <header className="max-w-7xl mx-auto flex justify-between items-center mb-10">
+      <header className="max-w-[1920px] w-[95%] mx-auto flex justify-between items-center mb-10">
         <div className="flex items-center gap-3 select-none">
              <Brain className="text-primary w-8 h-8" />
              <div className="hidden md:block">
@@ -281,7 +281,7 @@ export default function Dashboard({ user }) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto space-y-12">
+      <main className="max-w-[1920px] w-[95%] mx-auto space-y-12 px-6 pb-32 relative z-10 flex-1 flex flex-col">
         {/* SYNAPSE BAR: Combined Search & Save */}
         <div className="max-w-3xl mx-auto relative z-20 group">
            <div className={`absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-1000 group-hover:duration-200 ${isSaving ? 'animate-pulse opacity-60' : ''}`} />
@@ -364,7 +364,7 @@ export default function Dashboard({ user }) {
             ))}
         </div>
 
-        {/* MASONRY GRID: Memories */}
+        {/* GRID: Memories (Switched from Masonry to CSS Grid for better fill) */}
         {loading ? (
              <div className="flex justify-center py-20"><Loader2 className="animate-spin text-primary" size={40} /></div>
         ) : filteredItems.length === 0 ? (
@@ -394,15 +394,15 @@ export default function Dashboard({ user }) {
                  </div>
              </div>
         ) : (
-             <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 mx-auto pb-20">
-                <AnimatePresence>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-32">
+                <AnimatePresence mode="popLayout">
                     {filteredItems.map((item, index) => (
                         <SpotlightCard 
                            key={item.id}
-                           className="break-inside-avoid bg-surface border border-default rounded-2xl hover:border-primary/50 transition-all group cursor-pointer shadow-sm hover:shadow-xl"
+                           className="h-full flex flex-col bg-surface border border-default rounded-2xl hover:border-primary/50 transition-all group cursor-pointer shadow-sm hover:shadow-xl"
                            onClick={() => handleItemView(item)}
                         >
-                           <div className="p-6">
+                           <div className="p-6 flex flex-col h-full">
                                <div className="flex justify-between items-start mb-4">
                                    <div className="flex items-center gap-2 text-xs text-primary font-bold uppercase tracking-wider bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20">
                                        {getCategoryIcon(item.ai_output?.category)}
@@ -416,15 +416,15 @@ export default function Dashboard({ user }) {
                                    </button>
                                </div>
 
-                               <h3 className="text-lg font-bold text-secondary mb-2 leading-snug group-hover:text-primary transition-colors">
+                               <h3 className="text-lg font-bold text-secondary mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">
                                    {item.ai_output?.title || item.raw_input?.title || "Processing..."}
                                </h3>
                                
-                               <p className="text-sm text-muted leading-relaxed mb-6 line-clamp-4">
+                               <p className="text-sm text-muted leading-relaxed mb-6 line-clamp-3 flex-1">
                                    {item.ai_output?.summary || "AI is analyzing this content..."}
                                </p>
 
-                               <div className="flex items-center justify-between pt-4 border-t border-default/50 text-xs text-muted font-mono">
+                               <div className="flex items-center justify-between pt-4 border-t border-default/50 text-xs text-muted font-mono mt-auto">
                                    <div className="flex items-center gap-2">
                                       <div className={`w-2 h-2 rounded-full ${item.ai_output ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
                                       <span>{item.ai_output?.confidence_level?.toUpperCase() || 'UNKNOWN'} SCORE</span>
