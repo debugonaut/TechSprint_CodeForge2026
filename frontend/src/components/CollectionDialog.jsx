@@ -233,7 +233,14 @@ export default function CollectionDialog({ isOpen, onClose, user, onCollectionCr
             {collections.map((collection) => (
               <div
                 key={collection.id}
-                className="bg-black/20 border border-white/5 rounded-lg p-4 hover:bg-black/30 transition-colors"
+                className="bg-black/20 border border-white/5 rounded-lg p-4 hover:bg-black/30 hover:border-primary/50 transition-all cursor-pointer group"
+                role="button"
+                onClick={() => {
+                   if (onSelectCollection) {
+                       onSelectCollection(collection.id);
+                       onClose();
+                   }
+                }}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-3 flex-1">
@@ -258,16 +265,18 @@ export default function CollectionDialog({ isOpen, onClose, user, onCollectionCr
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => startEdit(collection)}
                       className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                      title="Edit"
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(collection.id)}
                       className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-red-500"
+                      title="Delete"
                     >
                       <Trash2 size={14} />
                     </button>

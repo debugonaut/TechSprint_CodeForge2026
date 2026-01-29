@@ -139,7 +139,7 @@ export default function Dashboard({ user }) {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!url) return;
+    if (!url && !query) return;
     
     setIsSaving(true);
     try {
@@ -151,24 +151,25 @@ export default function Dashboard({ user }) {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          url,
-          title: "Saving...",
-          content_text: "", 
-          platform: 'web',
+          url: url || '',
+          title: url ? "Saving..." : (query.slice(0, 50) + '...'),
+          content_text: query || "", 
+          platform: url ? 'web' : 'note',
           collectionId: selectedCollection !== 'all' ? selectedCollection : null
         })
       });
       
       if (res.status === 409) {
         const errorData = await res.json();
-        toast.error('This URL is already saved!');
+        toast.error('This content is already saved!');
         return;
       }
       
       if (res.ok) {
-        toast.success('Saved successfully!');
+        toast.success('Captured successfully!');
         setUrl('');
-        fetchItems(query, { category: selectedCategory, collectionId: selectedCollection });
+        setQuery('');
+        fetchItems('', { category: selectedCategory, collectionId: selectedCollection });
         fetchQuota(); // Refresh quota
       } else if (res.status === 429) {
         toast.error(`Daily quota exceeded! You've reached your ${quota.limit} saves/day limit.`);
@@ -284,50 +285,52 @@ export default function Dashboard({ user }) {
 
       <main className="max-w-[1920px] w-[95%] mx-auto space-y-12 px-6 pb-32 relative z-10 flex-1 flex flex-col">
         {/* SYNAPSE BAR: Combined Search & Save */}
-        <div className="max-w-3xl mx-auto relative z-20 group">
-           <div className={`absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-1000 group-hover:duration-200 ${isSaving ? 'animate-pulse opacity-60' : ''}`} />
-           <div className="relative bg-surface border border-default rounded-2xl shadow-2xl flex items-center p-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-              {/* Dynamic Icon */}
-              <div className="pl-4 pr-2 text-muted">
-                 {url.startsWith('http') ? <Plus className="text-primary animate-bounce" size={24}/> : <Search className="" size={24}/>}
-              </div>
-              
-              {/* Intelligent Input */}
-              <input 
-                type="text"
-                value={url || query}
-                onChange={(e) => {
-                    const val = e.target.value;
-                    if (val.startsWith('http')) {
-                        setUrl(val);
-                        setQuery('');
-                    } else {
-                        setQuery(val);
-                        setUrl('');
-                    }
-                }}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        if (url) handleSave(e);
-                        else handleSearch(e);
-                    }
-                }}
-                placeholder="Paste a URL to save... or type to search memories..."
-                className="w-full bg-transparent border-none focus:ring-0 text-lg py-3 placeholder:text-muted/50 text-secondary focus:outline-none"
-              />
+        {/* SYNAPSE BAR: Combined Search & Save */}
+        <div className="max-w-7xl mx-auto relative z-20 group">
+           {/* Ambient subtle backdrop */}
+           <div className={`absolute -inset-1 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-full opacity-0 group-hover:opacity-100 blur-xl transition duration-1000 ${isSaving ? 'animate-pulse opacity-60' : ''}`} />
+           
+           <div className="relative flex items-center bg-black/5 dark:bg-white/[0.03] backdrop-blur-2xl border border-black/5 dark:border-white/5 rounded-full transition-all duration-700 hover:shadow-[0_0_50px_-10px_rgba(167,139,250,0.15)] hover:border-primary/20 focus-within:shadow-[0_0_50px_-10px_rgba(167,139,250,0.25)] focus-within:border-primary/30">
+               
+               {/* Leading Icon: Large Brain (Neutral, Stable) */}
+               <div className="absolute left-6 text-black/20 dark:text-white/10 pointer-events-none transition-colors duration-500">
+                  <Brain size={32} strokeWidth={1.5} />
+               </div>
 
-              {/* Action Button */}
-              <button 
-                 onClick={url ? handleSave : handleSearch}
-                 disabled={isSaving || (url && quota.remaining === 0)}
-                 className={`px-6 py-2 rounded-xl font-bold transition-all ${
-                     url 
-                     ? 'bg-primary text-white hover:scale-105 shadow-lg shadow-primary/25' 
-                     : 'bg-surface border border-default text-muted hover:text-primary'
-                 }`}
-              >
-                 {isSaving ? <Loader2 className="animate-spin" /> : (url ? 'Save to Brain' : 'Recall')}
-              </button>
+               {/* Intake Field */}
+               <input 
+                 type="text"
+                 value={url || query}
+                 onChange={(e) => {
+                     const val = e.target.value;
+                     if (val.startsWith('http')) {
+                         setUrl(val);
+                         setQuery('');
+                     } else {
+                         setQuery(val);
+                         setUrl('');
+                     }
+                 }}
+                 onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                         if (url) handleSave(e);
+                         else handleSearch(e);
+                     }
+                 }}
+                 placeholder="Paste the URL to be saved"
+                 className="w-full bg-transparent border-none focus:ring-0 text-2xl font-light tracking-wide py-6 pl-20 pr-32 placeholder:text-black/50 dark:placeholder:text-white/40 text-secondary focus:outline-none transition-all"
+               />
+
+               {/* Action Button: Save/Capture */}
+               <div className="absolute right-3">
+                   <button 
+                      onClick={handleSave}
+                      disabled={isSaving || (!url && !query) || quota.remaining === 0}
+                      className="h-14 w-14 rounded-full flex items-center justify-center transition-all duration-500 bg-primary/20 text-primary hover:bg-primary/30 hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                   >
+                      {isSaving ? <Loader2 className="animate-spin" size={24} /> : <Plus size={28} strokeWidth={2} />}
+                   </button>
+               </div>
            </div>
            {/* Context Hints */}
            <div className="absolute top-full mt-2 left-4 text-xs text-muted flex gap-4">
@@ -594,10 +597,15 @@ export default function Dashboard({ user }) {
         onClose={() => setShowCollections(false)} 
         user={user}
         onCollectionCreated={fetchCollections}
+        onSelectCollection={(collectionId) => {
+           setSelectedCollection(collectionId);
+           setSelectedCategory('all'); // Clear category filter to see everything in collection
+           setQuery('');
+        }}
       />
       <ExportDialog 
         isOpen={showExport} 
-        onClose={() => setShowExport(false)} 
+        onClose={() => setShowExport(false)}  
         user={user}
       />
       <StatsDialog 
