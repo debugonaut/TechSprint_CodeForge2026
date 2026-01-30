@@ -281,6 +281,9 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            <div className="text-center mt-4 text-[10px] text-muted/40 italic">
+              * Based on the Ebbinghaus Forgetting Curve
+            </div>
           </motion.div>
 
           {/* Stats Below Graph */}
