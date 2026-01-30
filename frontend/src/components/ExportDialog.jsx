@@ -126,6 +126,23 @@ export default function ExportDialog({ isOpen, onClose, user }) {
                 </div>
               </div>
             </button>
+
+            <button
+              onClick={() => setFormat('pdf')}
+              className={`w-full p-4 rounded-xl border transition-all text-left ${
+                format === 'pdf'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-white/5 bg-black/20 hover:bg-black/30'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <FileText size={24} className={format === 'pdf' ? 'text-primary' : 'text-gray-400'} />
+                <div>
+                  <div className="font-semibold">PDF</div>
+                  <div className="text-xs text-gray-400">Printable document</div>
+                </div>
+              </div>
+            </button>
           </div>
 
           <button

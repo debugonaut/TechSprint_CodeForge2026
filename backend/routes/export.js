@@ -56,6 +56,70 @@ function toMarkdown(items) {
   return md;
 }
 
+const PDFDocument = require('pdfkit');
+
+// Helper function to convert items to PDF and stream to response
+function toPDF(items, res) {
+  const doc = new PDFDocument();
+  
+  // Set headers for PDF download
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="recallbin-export-${Date.now()}.pdf"`);
+  
+  // Pipe PDF to response
+  doc.pipe(res);
+  
+  // Title
+  doc.fontSize(24).text('RecallBin Export', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(12).text(`Exported on: ${new Date().toLocaleString()}`, { align: 'center' });
+  doc.moveDown(2);
+  
+  items.forEach((item, index) => {
+    // Add page break for new items if not the first one and near bottom
+    if (index > 0 && doc.y > 700) {
+      doc.addPage();
+    }
+    
+    // Item Title
+    doc.fontSize(18).font('Helvetica-Bold')
+       .text(item.ai_output?.title || item.raw_input?.title || 'Untitled');
+    doc.moveDown(0.5);
+    
+    // Metadata
+    doc.fontSize(10).font('Helvetica')
+       .text(`URL: ${item.url || 'N/A'}`)
+       .text(`Category: ${item.ai_output?.category || 'Unknown'}`)
+       .text(`Tags: ${(item.ai_output?.tags || []).join(', ')}`)
+       .text(`Created: ${new Date(item.created_at).toLocaleDateString()}`);
+       
+    doc.moveDown(0.5);
+    
+    // Summary
+    doc.fontSize(12).font('Helvetica-Bold').text('Summary:');
+    doc.fontSize(12).font('Helvetica')
+       .text(item.ai_output?.summary || 'No summary available.', { align: 'justify' });
+       
+    doc.moveDown();
+    
+    // Key Ideas
+    if (item.ai_output?.key_ideas && item.ai_output.key_ideas.length > 0) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Key Ideas:');
+      doc.fontSize(12).font('Helvetica');
+      item.ai_output.key_ideas.forEach(idea => {
+        doc.text(`• ${idea}`, { indent: 20 });
+      });
+      doc.moveDown();
+    }
+    
+    // Separator
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown(2);
+  });
+  
+  doc.end();
+}
+
 // GET /api/export/json
 router.get('/json', async (req, res) => {
   try {
@@ -122,6 +186,29 @@ router.get('/markdown', async (req, res) => {
   } catch (error) {
     console.error('Error in GET /export/markdown:', error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// GET /api/export/pdf
+router.get('/pdf', async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    
+    const snapshot = await db.collection('users').doc(userId).collection('saved_content')
+      .orderBy('created_at', 'desc')
+      .get();
+    
+    const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // toPDF handles the response directly
+    toPDF(items, res);
+    
+  } catch (error) {
+    console.error('Error in GET /export/pdf:', error);
+    // Only send error if headers haven't been sent (streaming might have started)
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 });
 

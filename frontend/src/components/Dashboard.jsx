@@ -503,6 +503,17 @@ export default function Dashboard({ user }) {
               )}
               <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Collections</span>
            </button>
+
+           <button 
+             onClick={() => setShowExport(true)} 
+             className={`p-2 rounded-xl transition-all relative group ${showExport ? 'text-primary' : 'text-muted hover:text-primary hover:bg-primary/5'}`}
+           >
+              <Download size={24} />
+              {showExport && (
+                  <motion.div layoutId="dockActive" className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_8px_2px_rgba(139,92,246,0.5)]" />
+              )}
+              <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Export</span>
+           </button>
            
            <button 
              onClick={() => setShowChat(true)} 
