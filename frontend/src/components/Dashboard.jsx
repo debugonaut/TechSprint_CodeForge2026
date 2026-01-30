@@ -7,7 +7,8 @@ import {
   Download, BarChart3, MessageCircle, Folder, Bell, Home, Settings,
   Video, Headphones, Music, Code, Newspaper, Globe, Image as ImageIcon, 
   BookOpen, Github, Twitter, Linkedin, Briefcase, DollarSign, Brain, Command,
-  Layout, MessageSquare, FolderPlus
+  Layout, MessageSquare, FolderPlus, Film, GraduationCap, Trophy, Activity, 
+  FlaskConical, MoreHorizontal
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CollectionDialog from './CollectionDialog';
@@ -225,16 +226,31 @@ export default function Dashboard({ user }) {
 
   const getCategoryIcon = (category) => {
     const cat = category?.toLowerCase() || '';
-    if (cat.includes('video') || cat.includes('youtube')) return <Video size={14} />;
-    if (cat.includes('music') || cat.includes('audio') || cat.includes('spotify')) return <Music size={14} />;
-    if (cat.includes('tech') || cat.includes('code') || cat.includes('dev')) return <Code size={14} />;
-    if (cat.includes('news') || cat.includes('article') || cat.includes('blog')) return <Newspaper size={14} />;
-    if (cat.includes('image') || cat.includes('photo') || cat.includes('design')) return <ImageIcon size={14} />;
-    if (cat.includes('finance') || cat.includes('money') || cat.includes('crypto')) return <DollarSign size={14} />;
-    if (cat.includes('work') || cat.includes('job') || cat.includes('career')) return <Briefcase size={14} />;
-    if (cat.includes('social') || cat.includes('twitter') || cat.includes('linkedin')) return <MessageSquare size={14} />;
-    if (cat.includes('book') || cat.includes('novel')) return <BookOpen size={14} />;
-    return <Globe size={14} />;
+    
+    // Exact Matches for Filter Tabs
+    if (cat === 'entertainment') return <Film size={16} />;
+    if (cat === 'education') return <GraduationCap size={16} />;
+    if (cat === 'business') return <Briefcase size={16} />;
+    if (cat === 'sports') return <Trophy size={16} />;
+    if (cat === 'health' || cat === 'fitness') return <Activity size={16} />;
+    if (cat === 'science') return <FlaskConical size={16} />;
+    if (cat === 'other') return <MoreHorizontal size={16} />;
+    if (cat === 'music') return <Music size={16} />;
+    if (cat === 'tech') return <Code size={16} />;
+    if (cat === 'news') return <Newspaper size={16} />;
+
+    // AI Inferred / Fuzzy Matches
+    if (cat.includes('video') || cat.includes('youtube')) return <Video size={16} />;
+    if (cat.includes('audio') || cat.includes('spotify')) return <Music size={16} />;
+    if (cat.includes('dev')) return <Code size={16} />;
+    if (cat.includes('article') || cat.includes('blog')) return <Newspaper size={16} />;
+    if (cat.includes('image') || cat.includes('photo') || cat.includes('design')) return <ImageIcon size={16} />;
+    if (cat.includes('finance') || cat.includes('money') || cat.includes('crypto')) return <DollarSign size={16} />;
+    if (cat.includes('work') || cat.includes('job') || cat.includes('career')) return <Briefcase size={16} />;
+    if (cat.includes('social') || cat.includes('twitter') || cat.includes('linkedin')) return <MessageSquare size={16} />;
+    if (cat.includes('book') || cat.includes('novel')) return <BookOpen size={16} />;
+    
+    return <Globe size={16} />;
   };
 
   // Apply filters
@@ -343,29 +359,36 @@ export default function Dashboard({ user }) {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center justify-center gap-2 relative z-10">
-            {categories.map(cat => (
-                <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
-                    selectedCategory === cat
-                    ? 'text-white'
-                    : 'text-muted hover:text-primary'
-                }`}
-                >
-                  {selectedCategory === cat && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/25 -z-10"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    {cat === 'all' ? <Layout size={14} /> : getCategoryIcon(cat)}
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </span>
-                </button>
-            ))}
+            {categories.map(cat => {
+                const count = cat === 'all' 
+                    ? items.length 
+                    : items.filter(i => (i.ai_output?.category || 'other').toLowerCase() === cat).length;
+                
+                return (
+                    <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        title={cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        className={`relative px-3 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                            selectedCategory === cat
+                            ? 'text-white'
+                            : 'text-muted hover:text-primary'
+                        }`}
+                    >
+                        {selectedCategory === cat && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/25 -z-10"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1.5">
+                            {cat === 'all' ? <Layout size={16} /> : getCategoryIcon(cat)}
+                            <span className="text-xs font-mono opacity-80">({count})</span>
+                        </span>
+                    </button>
+                );
+            })}
         </div>
 
         {/* GRID: Memories (Switched from Masonry to CSS Grid for better fill) */}
